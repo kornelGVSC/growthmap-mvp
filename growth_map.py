@@ -1,6 +1,8 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+from PIL import Image, ImageOps
+import requests
 
 st.set_page_config(layout="wide")
 
@@ -49,7 +51,45 @@ def add_hcm(x, y):
         , align="center")
 
 
-st.header('GROWTH MAP WIP')
+def resize_image(url):
+    """function to resize logos while keeping aspect ratio. Accepts URL as an argument and return an image object"""
+
+    # Open the image file
+    image = Image.open(requests.get(url, stream=True).raw)
+
+    # if a logo is too high or too wide then make the background container twice as big
+    if image.height > 140:
+        container_width = 220 * 2
+        container_height = 140 * 2
+
+    elif image.width > 220:
+        container_width = 220 * 2
+        container_height = 140 * 2
+    else:
+        container_width = 220
+        container_height = 140
+
+    # Create a new image with the same aspect ratio as the original image
+    new_image = Image.new('RGBA', (container_width, container_height))
+
+    # Calculate the position to paste the image so that it is centered
+    x = (container_width - image.width) // 2
+    y = (container_height - image.height) // 2
+
+    # Paste the image onto the new image
+    new_image.paste(image, (x, y))
+
+    # border color
+    # color = "#ededed"
+    # # top, right, bottom, left
+    # border = (2, 2, 2, 2)
+    # # add borders
+    # new_image = ImageOps.expand(new_image, border=border, fill=color)
+
+    return new_image
+
+
+st.header('GROWTH MAP MVP')
 
 st.write('*the data is fictional for demo purposes only')
 
@@ -96,6 +136,8 @@ if selected_cust:
 else:
     selected_logo = ''
 
+# resize logo
+resized_logo = resize_image(selected_logo)
 
 # if user selected customer then create a title variable
 if selected_cust:
@@ -132,10 +174,10 @@ fig.update_layout(
 # Add logo
 fig.add_layout_image(
     dict(
-        source=selected_logo,
+        source=resized_logo,
         xref="paper", yref="paper",
-        x=0.1, y=1,
-        sizex=0.25, sizey=0.25,
+        x=1, y=1,
+        sizex=0.20, sizey=0.20,
         xanchor="right", yanchor="bottom"
     )
 )
